@@ -7,15 +7,6 @@ pub struct X<T, M: Mode> {
     _mode: M,
 }
 
-impl<T, U> PartialEq for X<T, U>
-where
-    T: PartialEq,
-    U: Mode,
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.rows == other.rows
-    }
-}
 impl<T, U> Default for X<T, U>
 where
     T: Default + Clone + Into<Point<T>>,
@@ -47,9 +38,7 @@ where
     T: Default + Clone + Into<Point<T>>,
 {
     /** Adds a new row to the grid.
-    if X is symetrical resizes the new row to match the length of the other rows.
     # Example
-    ##
     ```
     # fn main() {
         use grid::{X, Symetrical};
@@ -71,9 +60,6 @@ where
             .resize(grid_depth, T::default().into())
     }
     /** Adds column to X.
-    # Panic
-    Panics if called on an asymetrical grid.
-
     # Example
     ```
     # use grid::{X, Point, Symetrical};
@@ -86,7 +72,7 @@ where
     ```
     */
     pub fn add_column(&mut self) {
-        if self.rows.len() == 0 {
+        if self.rows.is_empty() {
             self.rows.push(Y::new())
         }
         for row in &mut self.rows[..] {
@@ -98,9 +84,6 @@ where
     Point is zero indexed.
 
     X will be expanded to accomidate point location if neseccary.
-
-    # Panic
-    Panics if grid is asymerical.
 
     # Example
     ```
@@ -114,7 +97,7 @@ where
         */
     pub fn push_point(&mut self, point: (usize, usize), value: T) {
         let (x, y) = point;
-        if self.rows.len() == 0 {
+        if self.rows.is_empty() {
             self.rows.push(Y::new());
         }
         if self.rows[0].len() <= y {
@@ -134,11 +117,36 @@ impl<T> X<T, Asymetrical>
 where
     T: Default + Into<Point<T>>,
 {
-    pub fn get_vec(&self) -> &Vec<Y<T, Asymetrical>> {
-        &self.rows
+    /** Adds a row to the grid.
+    # Example
+    ```
+    use grid::{X, Y, Asymetrical};
+
+    fn main() {
+        let mut grid: X<u32, Asymetrical> = X::new();
+        grid.add_row();
+        assert_eq!(grid[0], Y::new());
     }
-    pub fn get_vec_mut(&mut self) -> &mut Vec<Y<T, Asymetrical>> {
-        &mut self.rows
+    ```
+    */
+    pub fn add_row(&mut self) {
+        self.rows.push(Y::new())
+    }
+
+    /** Pops the last row from the grid
+    # Example
+    ```
+    # use grid::{X, Y, Asymetrical};
+    # fn main() {
+        let mut grid: X<u32, Asymetrical> = X::new();
+        grid.add_row();
+        let row: Y<u32, Asymetrical> = Y::new();
+        assert_eq!(grid.pop_row(), Some(row));
+    # }
+    ```
+    */
+    pub fn pop_row(&mut self) -> Option<Y<T, Asymetrical>> {
+        self.rows.pop()
     }
 }
 impl<A, U> FromIterator<Vec<A>> for X<A, U>
@@ -153,11 +161,6 @@ where
                 .collect::<Vec<Y<A, U>>>(),
             _mode: U::default(),
         }
-    }
-}
-impl<T: Default + Into<Point<T>>> X<T, Asymetrical> {
-    pub fn add_row(&mut self) {
-        self.rows.push(Y::new())
     }
 }
 
@@ -177,5 +180,53 @@ where
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.rows[..]
+    }
+}
+
+impl<T, U> PartialEq for X<T, U>
+where
+    T: PartialEq,
+    U: Mode,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.rows == other.rows
+    }
+}
+
+impl<T> From<X<T, Asymetrical>> for X<T, Symetrical>
+where
+    T: Default + Into<Point<T>>,
+{
+    fn from(mut other: X<T, Asymetrical>) -> Self {
+        let max = other.iter().map(|x| x.len()).max().unwrap_or(0);
+        for i in &mut other[..] {
+            for _ in i.len()..=max {
+                i.push(T::default());
+            }
+        }
+        Self {
+            rows: other
+                .rows
+                .into_iter()
+                .map(Y::from)
+                .collect::<Vec<Y<T, Symetrical>>>(),
+            _mode: Symetrical,
+        }
+    }
+}
+
+impl<T> From<X<T, Symetrical>> for X<T, Asymetrical>
+where
+    T: Default + Into<Point<T>>,
+{
+    fn from(other: X<T, Symetrical>) -> Self {
+        Self {
+            rows: other
+                .rows
+                .into_iter()
+                .map(Y::from)
+                .collect::<Vec<Y<T, Asymetrical>>>(),
+            _mode: Asymetrical,
+        }
     }
 }

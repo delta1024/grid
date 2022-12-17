@@ -1,3 +1,5 @@
+use crate::Symetrical;
+
 use super::{Asymetrical, Mode, Point};
 use std::ops::{Deref, DerefMut};
 #[derive(Debug, Clone)]
@@ -34,13 +36,20 @@ where
         }
     }
 }
+impl<U, T> Default for Y<T, U>
+where
+    U: Mode,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl<T> Y<T, Asymetrical>
 where
     T: Into<Point<T>>,
 {
     /** Calls push on the underling vector.
 
-    X size will remain consistant if symetry is enabled and you don't manualy extend row 0 in a grid.
     # Example
     ```
     # use grid::{X, Point, Asymetrical, Y};
@@ -54,7 +63,17 @@ where
     pub fn push(&mut self, value: T) {
         self.points.push(value.into())
     }
-    /// Calles pop on the underling vector.
+    /** Calles pop on the underling vector.
+    # Example
+    ```
+    # use grid::{Y, Asymetrical};
+    # fn main() {
+        let mut y: Y<u32, Asymetrical> = Y::new();
+        y.push(3);
+        assert_eq!(y.pop(), Some(3));
+    # }
+    ```
+    */
     pub fn pop(&mut self) -> Option<T> {
         self.points.pop().map(|x| x.unwrap())
     }
@@ -87,6 +106,24 @@ impl<A, M: Mode + Default> FromIterator<A> for Y<A, M> {
                 .map(|x| Point::from(x))
                 .collect::<Vec<Point<A>>>(),
             _mode: M::default(),
+        }
+    }
+}
+
+impl<T> From<Y<T, Asymetrical>> for Y<T, Symetrical> {
+    fn from(other: Y<T, Asymetrical>) -> Self {
+        Self {
+            points: other.points,
+            _mode: Symetrical,
+        }
+    }
+}
+
+impl<T> From<Y<T, Symetrical>> for Y<T, Asymetrical> {
+    fn from(other: Y<T, Symetrical>) -> Self {
+        Self {
+            points: other.points,
+            _mode: Asymetrical,
         }
     }
 }
