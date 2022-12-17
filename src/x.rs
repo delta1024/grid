@@ -41,7 +41,7 @@ where
     # Example
     ```
     # fn main() {
-        use grid::{X, Symetrical};
+        use symetrical_grid::{X, Symetrical};
         let mut grid: X<i32, Symetrical> = X::new();
         let mut x = grid.len();
         assert_eq!(x, 0);
@@ -62,7 +62,7 @@ where
     /** Adds column to X.
     # Example
     ```
-    # use grid::{X, Point, Symetrical};
+    # use symetrical_grid::{X, Point, Symetrical};
     # fn main() {
         let mut grid: X<u32, Symetrical> = X::new();
         grid.push_point((3, 4), 7);
@@ -88,7 +88,7 @@ where
     # Example
     ```
     # fn main() {
-    #   use grid::{X, Point};
+    #   use symetrical_grid::{X, Point};
         let mut grid = X::new();
         grid.push_point((3, 4), 5);
         assert_eq!(grid[3][4], Point::from(5));
@@ -120,7 +120,7 @@ where
     /** Adds a row to the grid.
     # Example
     ```
-    use grid::{X, Y, Asymetrical};
+    use symetrical_grid::{X, Y, Asymetrical};
 
     fn main() {
         let mut grid: X<u32, Asymetrical> = X::new();
@@ -136,7 +136,7 @@ where
     /** Pops the last row from the grid
     # Example
     ```
-    # use grid::{X, Y, Asymetrical};
+    # use symetrical_grid::{X, Y, Asymetrical};
     # fn main() {
         let mut grid: X<u32, Asymetrical> = X::new();
         grid.add_row();

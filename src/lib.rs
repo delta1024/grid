@@ -7,7 +7,7 @@ This crate provides a 2D data structure called [`X`].
 
 ## Create a grid from a string (or any iterator of vectors).
 ```
-use grid::{X, Y, Symetrical};
+use symetrical_grid::{X, Y, Symetrical};
 
  let example_grid = "012
                      345
@@ -31,7 +31,7 @@ use grid::{X, Y, Symetrical};
 ```
 You can do the same thing with a row
 ```
- use grid::{Y, Asymetrical};
+ use symetrical_grid::{Y, Asymetrical};
 let mut control: Y<char, Asymetrical> = Y::new();
 control.push('h');
 control.push('e');

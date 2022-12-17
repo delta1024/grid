@@ -52,7 +52,7 @@ where
 
     # Example
     ```
-    # use grid::{X, Point, Asymetrical, Y};
+    # use symetrical_grid::{X, Point, Asymetrical, Y};
     # fn main() {
         let mut grid: X<i32, Asymetrical> = X::new();
         grid.add_row();
@@ -66,7 +66,7 @@ where
     /** Calles pop on the underling vector.
     # Example
     ```
-    # use grid::{Y, Asymetrical};
+    # use symetrical_grid::{Y, Asymetrical};
     # fn main() {
         let mut y: Y<u32, Asymetrical> = Y::new();
         y.push(3);
