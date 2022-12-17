@@ -1,4 +1,4 @@
-/*! A library for dealing with 2D data structures
+/*! A crate for dealing with 2D data structures
 
 This crate provides a 2D data structure called [`X`].
 
@@ -8,16 +8,16 @@ A grid consists of three things:
   - Y Axis (A Vector)
   - Intersection Point (The data stored inside of Y)
 
-Each grid implementing two states.
+Each grid implements two states.
   - Symetrical (Each vector in X will have the same lengthh).
   - Asymentrical (Up to the user to determin how they wish to configure the table).
 
-Idealy in a symetrical grid you would want the following (for me at least):
+A symetrical grid has the following features:
   - Ability to add a new row to the grid
   - Ability to add a new column to the grid
   - Ability to add a value at (x,y) on the grid and have it adust it's size acordingly.
 
-An asymetrical grid would then have the following features:
+An asymetrical grid has the following features:
   - Ability for the user to add a new row to the table.
   - Ability for the user to add a new column to a desired row (providing it already exists).
   - Ability for the user to add a new entry to a desired column in a row
@@ -76,7 +76,7 @@ asym[0].push(3);
 asym[1].push(4);
 asym[1].push(5);
 asym[2].push(4);
-let sym: X<i32, Symetrical> = X::from(asym);
+let sym = asym.into_symetrical();
 assert_eq!(sym, control);
 
 ```
@@ -93,7 +93,7 @@ control[0].push(3);
 control[1].push(2);
 control[1].push(3);
 control[1].push(4);
-let t: X<i32, Asymetrical> = X::from(test);
+let t = test.into_asymetrical();
 assert_eq!(control, t);
 ```
 */

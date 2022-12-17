@@ -44,6 +44,24 @@ where
         Self::new()
     }
 }
+impl<T> Y<T, Symetrical>
+where
+    T: Into<Point<T>> + Clone,
+{
+    /** Converts a symetrical Y to an asymetrical Y.
+    ```
+    # use symetrical_grid::{Y, Asymetrical, Symetrical};
+
+    let f: Y<i32, Symetrical> = Y::new();
+    let s: Y<i32, Asymetrical> = Y::new();
+    assert_eq!(s, f.into_asymetrical());
+    ```
+    */
+    #[inline]
+    pub fn into_asymetrical(self) -> Y<T, Asymetrical> {
+        Y::from(self)
+    }
+}
 impl<T> Y<T, Asymetrical>
 where
     T: Into<Point<T>> + Clone,
@@ -80,6 +98,19 @@ where
     /// Resizes `Y` in place so that `len` is equal to `new_len`.
     pub fn resize(&mut self, new_len: usize, value: T) {
         self.points.resize(new_len, value.into())
+    }
+    /** Converts an asymetrical Y to a symetrical Y.
+    ```
+    # use symetrical_grid::{Y, Asymetrical, Symetrical};
+
+    let f: Y<i32, Asymetrical> = Y::new();
+    let s: Y<i32, Symetrical> = Y::new();
+    assert_eq!(s, f.into_symetrical());
+    ```
+    */
+    #[inline]
+    pub fn into_symetrical(self) -> Y<T, Symetrical> {
+        Y::from(self)
     }
 }
 

@@ -112,6 +112,19 @@ where
         }
         self.rows[x][y] = value.into();
     }
+    /** Converts a symetrical `X` value into a symetrical one.
+    ```
+    # use symetrical_grid::{X, Asymetrical, Symetrical};
+    let f: X<i32, Symetrical> = X::new();
+    let x: X<i32, Asymetrical> = X::new();
+    assert_eq!(x, f.into_asymetrical());
+
+    ```
+    */
+    #[inline]
+    pub fn into_asymetrical(self) -> X<T, Asymetrical> {
+        X::from(self)
+    }
 }
 impl<T> X<T, Asymetrical>
 where
@@ -164,6 +177,20 @@ where
      */
     pub fn push_row(&mut self, row: Y<T, Asymetrical>) {
         self.rows.push(row);
+    }
+
+    /** Converts a asymetrical `X` value to a symetrical one,
+    ```
+    # use symetrical_grid::{X, Asymetrical, Symetrical};
+    let f: X<i32, Asymetrical> = X::new();
+    let x: X<i32, Symetrical> = X::new();
+    assert_eq!(x, f.into_symetrical());
+
+    ```
+    */
+    #[inline]
+    pub fn into_symetrical(self) -> X<T, Symetrical> {
+        X::from(self)
     }
 }
 impl<A, U> FromIterator<Vec<A>> for X<A, U>
@@ -314,6 +341,4 @@ mod test {
         x_c[1].push(4);
         assert_eq!(x, x_c);
     }
-    #[test]
-    fn test_macro() {}
 }
