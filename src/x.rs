@@ -153,6 +153,18 @@ where
     pub fn resize(&mut self, new_len: usize) {
         self.rows.resize(new_len, Y::new());
     }
+    /** Pushes `row` to the end of the grid
+    ```
+    use symetrical_grid::{X, Y, Asymetrical, Point};
+    let y: Y<u32, Asymetrical> = Y::from(&([1,2,3])[..]);
+    let mut x: X<u32, Asymetrical> = X::new();
+    x.push_row(y);
+    assert_eq!(x[0][1], Point::from(2));
+    ```
+     */
+    pub fn push_row(&mut self, row: Y<T, Asymetrical>) {
+        self.rows.push(row);
+    }
 }
 impl<A, U> FromIterator<Vec<A>> for X<A, U>
 where
@@ -205,7 +217,7 @@ where
     fn from(mut other: X<T, Asymetrical>) -> Self {
         let max = other.iter().map(|x| x.len()).max().unwrap_or(0);
         for i in &mut other[..] {
-            for _ in i.len()..=max {
+            for _ in i.len()..max {
                 i.push(T::default());
             }
         }
@@ -234,4 +246,74 @@ where
             _mode: Asymetrical,
         }
     }
+}
+
+impl<T> From<&[&[T]]> for X<T, Asymetrical>
+where
+    T: Clone + Default,
+{
+    fn from(c: &[&[T]]) -> Self {
+        let mut x: X<T, Asymetrical> = X::new();
+        for y in c {
+            x.push_row(Y::from(*y));
+        }
+        x
+    }
+}
+
+#[macro_export]
+/** Creates a grid from given input
+```
+use symetrical_grid::{X, Y, Asymetrical, Symetrical, grid};
+
+let n: X<i32, Symetrical> = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+let mut control: X<i32, Asymetrical> = X::new();
+let one: Y<i32, Asymetrical> = Y::from(&([1, 2, 3])[..]);
+let two: Y<i32, Asymetrical> = Y::from(&([4, 5, 6])[..]);
+let three: Y<i32, Asymetrical> = Y::from(&([7, 8, 9])[..]);
+control.push_row(one);
+control.push_row(two);
+control.push_row(three);
+let control: X<i32, Symetrical> = X::from(control);
+assert_eq!(n, control);
+
+```
+*/
+macro_rules! grid {
+    ($grid: expr) => {{
+        use symetrical_grid::{Asymetrical, Symetrical, X, Y};
+        let mut x: X<_, Asymetrical> = X::new();
+        for y in &$grid[..] {
+            let mut o: Y<_, Asymetrical> = Y::new();
+            for i in &y[..] {
+                o.push(i.clone());
+            }
+            x.push_row(o);
+        }
+        let n: X<_, Symetrical> = X::from(x);
+        n
+    }};
+}
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn from_slices() {
+        let x = [1, 2, 3];
+        let y = [2, 3, 4];
+        let t = [&x[..], &y[..]];
+        let x = X::from(&t[..]);
+        let mut x_c: X<i32, Asymetrical> = X::new();
+        x_c.add_row();
+        x_c.add_row();
+        x_c[0].push(1);
+        x_c[0].push(2);
+        x_c[0].push(3);
+        x_c[1].push(2);
+        x_c[1].push(3);
+        x_c[1].push(4);
+        assert_eq!(x, x_c);
+    }
+    #[test]
+    fn test_macro() {}
 }

@@ -131,3 +131,33 @@ impl<T> From<Y<T, Symetrical>> for Y<T, Asymetrical> {
         }
     }
 }
+
+impl<T> From<&[T]> for Y<T, Asymetrical>
+where
+    T: Clone,
+{
+    fn from(v: &[T]) -> Self {
+        Self {
+            points: v
+                .iter()
+                .map(|x| Point::from(x.clone()))
+                .collect::<Vec<Point<T>>>(),
+            _mode: Asymetrical,
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn from_slices() {
+        let control = [1, 2, 3];
+        let y = Y::from(&control[..]);
+        let mut control: Y<i32, Asymetrical> = Y::new();
+        control.push(1);
+        control.push(2);
+        control.push(3);
+        assert_eq!(control, y);
+    }
+}
