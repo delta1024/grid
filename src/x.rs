@@ -115,7 +115,7 @@ where
 }
 impl<T> X<T, Asymetrical>
 where
-    T: Default + Into<Point<T>>,
+    T: Default + Into<Point<T>> + Clone,
 {
     /** Adds a row to the grid.
     # Example
@@ -147,6 +147,11 @@ where
     */
     pub fn pop_row(&mut self) -> Option<Y<T, Asymetrical>> {
         self.rows.pop()
+    }
+
+    /// Resizes `X` in place so that `len` is equal to `new_len`.
+    pub fn resize(&mut self, new_len: usize) {
+        self.rows.resize(new_len, Y::new());
     }
 }
 impl<A, U> FromIterator<Vec<A>> for X<A, U>
@@ -195,7 +200,7 @@ where
 
 impl<T> From<X<T, Asymetrical>> for X<T, Symetrical>
 where
-    T: Default + Into<Point<T>>,
+    T: Default + Into<Point<T>> + Clone,
 {
     fn from(mut other: X<T, Asymetrical>) -> Self {
         let max = other.iter().map(|x| x.len()).max().unwrap_or(0);

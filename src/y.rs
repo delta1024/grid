@@ -46,7 +46,7 @@ where
 }
 impl<T> Y<T, Asymetrical>
 where
-    T: Into<Point<T>>,
+    T: Into<Point<T>> + Clone,
 {
     /** Calls push on the underling vector.
 
@@ -76,6 +76,10 @@ where
     */
     pub fn pop(&mut self) -> Option<T> {
         self.points.pop().map(|x| x.unwrap())
+    }
+    /// Resizes `Y` in place so that `len` is equal to `new_len`.
+    pub fn resize(&mut self, new_len: usize, value: T) {
+        self.points.resize(new_len, value.into())
     }
 }
 

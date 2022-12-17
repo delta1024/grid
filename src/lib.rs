@@ -65,7 +65,7 @@ mod mode {
     pub struct Symetrical;
     impl Mode for Symetrical {}
     #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
-    /// Denotes a asymetrical grid.
+    /// Denotes an asymetrical grid.
     pub struct Asymetrical;
     impl Mode for Asymetrical {}
 }
