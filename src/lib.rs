@@ -44,7 +44,7 @@ use symetrical_grid::{grid, X, Y, Symetrical};
      .lines()
      .map(|x| x.trim().chars().map(|x| u32::from(x) - 48).collect::<Vec<u32>>())
      .collect::<X<u32, Symetrical>>();
- let mut constant_grid: X<u32, Symetrical> = grid!([[0,1,2], [3, 4, 5], [6, 7, 8]]);
+ let mut constant_grid: X<u32, Symetrical> = grid![[0,1,2], [3, 4, 5], [6, 7, 8]];
  assert_eq!(grid, constant_grid);
 
 ```
@@ -65,7 +65,7 @@ assert_eq!(control, test);
 # Converting between Asymetrical grids and Symetrical grids
 ```
 use symetrical_grid::{grid, X, Y, Symetrical, Asymetrical};
-let control = grid!([[0,1,3], [4, 5, 0], [4, 0, 0]]);
+let control = grid![[0,1,3], [4, 5, 0], [4, 0, 0]];
 let mut asym: X<i32, Asymetrical> = X::new();
 asym.add_row();
 asym.add_row();
@@ -83,7 +83,7 @@ assert_eq!(sym, control);
 # Converting between Symetrical grids and Asymetrical grids.
 ```
 use symetrical_grid::{X, Y, Symetrical, Asymetrical, grid};
-let test = grid!([[1,2,3], [2,3,4]]);
+let test = grid![[1,2,3], [2,3,4]];
 let mut control: X<i32, Asymetrical> = X::new();
 control.add_row();
 control.add_row();

@@ -49,6 +49,7 @@ where
     T: Into<Point<T>> + Clone,
 {
     /** Converts a symetrical Y to an asymetrical Y.
+    # Examples
     ```
     # use symetrical_grid::{Y, Asymetrical, Symetrical};
 
@@ -68,7 +69,7 @@ where
 {
     /** Calls push on the underling vector.
 
-    # Example
+    # Examples
     ```
     # use symetrical_grid::{X, Point, Asymetrical, Y};
     # fn main() {
@@ -78,11 +79,12 @@ where
         assert_eq!(grid[0][0], Point::from(3));
     # }
     */
+    #[inline]
     pub fn push(&mut self, value: T) {
         self.points.push(value.into())
     }
     /** Calles pop on the underling vector.
-    # Example
+    # Examples
     ```
     # use symetrical_grid::{Y, Asymetrical};
     # fn main() {
@@ -92,14 +94,17 @@ where
     # }
     ```
     */
+    #[inline]
     pub fn pop(&mut self) -> Option<T> {
         self.points.pop().map(|x| x.unwrap())
     }
     /// Resizes `Y` in place so that `len` is equal to `new_len`.
+    #[inline]
     pub fn resize(&mut self, new_len: usize, value: T) {
         self.points.resize(new_len, value.into())
     }
     /** Converts an asymetrical Y to a symetrical Y.
+    # Examples
     ```
     # use symetrical_grid::{Y, Asymetrical, Symetrical};
 
@@ -180,25 +185,27 @@ where
 
 #[macro_export]
 /** Creates a new asymetrical row.
+# Examples
 ```
 use symetrical_grid::{row_asym, Y, Asymetrical};
 
-let row: Y<i32, Asymetrical> = row_asym!([1, 2, 3]);
+let row: Y<i32, Asymetrical> = row_asym![1, 2, 3];
 let control: Y<i32, Asymetrical> = Y::from(&[1,2,3][..]);
 assert_eq!(row, control);
 ```
 */
 macro_rules! row_asym {
-    ($row: expr) => {{
+    ($($row: expr),*) => {{
         use symetrical_grid::{Asymetrical, Y};
         let mut n: Y<_, Asymetrical> = Y::new();
-        for val in &$row[..] {
-            n.push(val.clone());
-        }
+        $(
+            n.push($row.clone());
+         )*
         n
     }};
-    () => {
-        todo!()
+    [] => {
+        let n: Y<_, Asymetriacal> = Y::new();
+        n
     };
 }
 #[macro_export]
@@ -206,19 +213,22 @@ macro_rules! row_asym {
 ```
 use symetrical_grid::{row, Y, Symetrical};
 
-let row: Y<i32, Symetrical> = row!([1, 2, 3]);
+let row: Y<i32, Symetrical> = row![1, 2, 3];
 let control: Y<i32, Symetrical> = Y::from(&[1,2,3][..]).into_symetrical();
 assert_eq!(row, control);
 ```
 */
 macro_rules! row {
-    ($row: expr) => {{
-        use symetrical_grid::row_asym;
-        let row = row_asym!($row);
-        row.into_symetrical()
+    ($($row: expr),*) => {{
+        use symetrical_grid::{Asymetrical, Y};
+        let mut n: Y<_, Asymetrical> = Y::new();
+        $(
+            n.push($row.clone());
+         )*
+        n.into_symetrical()
     }};
-    () => {
-        row_asym!().into_symetrical()
+    [] => {
+        row_asym![].into_symetrical()
     };
 }
 #[cfg(test)]

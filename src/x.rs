@@ -37,10 +37,11 @@ where
     }
 
     /** Returns a reference to the value at point.
+    # Examples
     ```
     use symetrical_grid::grid;
 
-    let grid = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    let grid = grid![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
     assert_eq!(grid.get_point(1,1), Some(&5));
     assert_eq!(grid.get_point(13, 45), None);
     ```
@@ -57,10 +58,11 @@ where
     }
 
     /** Returns a mutable reference to the value at point.
+    # Examples
     ```
     use symetrical_grid::{grid, Point};
 
-    let mut grid = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    let mut grid = grid![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
     grid.get_point_mut(1,1).map(|x| *x = 15);
     assert_eq!(grid[1][1], Point::from(15));
     ```
@@ -75,6 +77,20 @@ where
         }
         Some(&mut self[x][y].0)
     }
+
+    /** Returns an iterator visiting all values in each row.
+    # Examples
+    ```
+    use symetrical_grid::grid_asym;
+    let grid=  grid_asym![&[1, 2][..], &[3, 4][..]];
+    let mut iter = grid.iter();
+    assert_eq!(iter.next(), Some(&1));
+    assert_eq!(iter.next(), Some(&2));
+    assert_eq!(iter.next(), Some(&3));
+    assert_eq!(iter.next(), Some(&4));
+    assert_eq!(iter.next(), None);
+    ```
+    */
     pub fn iter<'a>(&'a self) -> Iter<'a, T, U> {
         let mut iter = self.rows.iter();
         let column: slice::Iter<Point<T>> = match iter.next() {
@@ -86,6 +102,20 @@ where
             colums: column,
         }
     }
+    /** Provides a forward iterator with mutable references.
+    # Examples
+    ```
+    use symetrical_grid::grid_asym;
+    let mut grid = grid_asym![[1, 2], [3, 4]];
+    let mut iter = grid.iter_mut();
+    assert_eq!(iter.next(), Some(&mut 1));
+    assert_eq!(iter.next(), Some(&mut 2));
+    assert_eq!(iter.next(), Some(&mut 3));
+    assert_eq!(iter.next(), Some(&mut 4));
+    assert_eq!(iter.next(), None);
+
+    ```
+    */
     pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T, U> {
         let mut iter = self.rows.iter_mut();
         let column: slice::IterMut<Point<T>> = match iter.next() {
@@ -103,7 +133,7 @@ where
     T: Default + Clone + Into<Point<T>>,
 {
     /** Adds a new row to the grid.
-    # Example
+    # Examples
     ```
     # fn main() {
         use symetrical_grid::{X, Symetrical};
@@ -125,7 +155,7 @@ where
             .resize(grid_depth, T::default().into())
     }
     /** Adds column to X.
-    # Example
+    # Examples
     ```
     # use symetrical_grid::{X, Point, Symetrical};
     # fn main() {
@@ -150,7 +180,7 @@ where
 
     X will be expanded to accomidate point location if neseccary.
 
-    # Example
+    # Examples
     ```
     # fn main() {
     #   use symetrical_grid::{X, Point};
@@ -177,6 +207,7 @@ where
         self.rows[x][y] = value.into();
     }
     /** Converts a symetrical `X` value into an asymetrical one.
+    # Examples
     ```
     # use symetrical_grid::{X, Asymetrical, Symetrical};
     let f: X<i32, Symetrical> = X::new();
@@ -195,7 +226,7 @@ where
     T: Default + Into<Point<T>> + Clone,
 {
     /** Adds a row to the grid.
-    # Example
+    # Examples
     ```
     use symetrical_grid::{X, Y, Asymetrical};
 
@@ -206,12 +237,13 @@ where
     }
     ```
     */
+    #[inline]
     pub fn add_row(&mut self) {
         self.rows.push(Y::new())
     }
 
     /** Pops the last row from the grid
-    # Example
+    # Examples
     ```
     # use symetrical_grid::{X, Y, Asymetrical};
     # fn main() {
@@ -222,15 +254,18 @@ where
     # }
     ```
     */
+    #[inline]
     pub fn pop_row(&mut self) -> Option<Y<T, Asymetrical>> {
         self.rows.pop()
     }
 
     /// Resizes `X` in place so that `len` is equal to `new_len`.
+    #[inline]
     pub fn resize(&mut self, new_len: usize) {
         self.rows.resize(new_len, Y::new());
     }
     /** Pushes `row` to the end of the grid
+    # Examples
     ```
     use symetrical_grid::{X, Y, Asymetrical, Point};
     let y: Y<u32, Asymetrical> = Y::from(&([1,2,3])[..]);
@@ -239,11 +274,13 @@ where
     assert_eq!(x[0][1], Point::from(2));
     ```
      */
+    #[inline]
     pub fn push_row(&mut self, row: Y<T, Asymetrical>) {
         self.rows.push(row);
     }
 
     /** Converts a asymetrical `X` value to a symetrical one,
+    # Examples
     ```
     # use symetrical_grid::{X, Asymetrical, Symetrical};
     let f: X<i32, Asymetrical> = X::new();
@@ -351,6 +388,7 @@ where
         x
     }
 }
+/// An iterator over each item in each row.
 pub struct Iter<'a, T: 'a, U: 'a + Mode> {
     rows: slice::Iter<'a, Y<T, U>>,
     colums: slice::Iter<'a, Point<T>>,
@@ -373,6 +411,7 @@ where
         }
     }
 }
+/// A mutable iterator over each item in each row.
 pub struct IterMut<'a, T: 'a, U: 'a + Mode> {
     rows: slice::IterMut<'a, Y<T, U>>,
     columns: slice::IterMut<'a, Point<T>>,
@@ -398,10 +437,11 @@ where
 }
 #[macro_export]
 /** Creates a asymetrical grid from the given input
+# Examples
 ```
 use symetrical_grid::{X, Y, Asymetrical, grid_asym};
 
-let n = grid_asym!([&[1,2,3][..], &[4,5][..]]);
+let n = grid_asym![&[1,2,3][..], &[4,5][..]];
 let mut control: X<i32, Asymetrical> = X::new();
 let one: Y<i32, Asymetrical> = Y::from(&([1, 2, 3])[..]);
 let two: Y<i32, Asymetrical> = Y::from(&([4, 5])[..]);
@@ -410,19 +450,20 @@ control.push_row(two);
 assert_eq!(n, control);
 ``` */
 macro_rules! grid_asym {
-    ($grid: expr) => {{
+    [$($grid: expr),*] => {{
         use symetrical_grid::{Asymetrical, Symetrical, X, Y};
         let mut x: X<_, Asymetrical> = X::new();
-        for y in &$grid[..] {
+        $(
+
             let mut o: Y<_, Asymetrical> = Y::new();
-            for i in &y[..] {
+            for i in &$grid[..] {
                 o.push(i.clone());
             }
             x.push_row(o);
-        }
+        )*
         x
     }};
-    () => {{
+    [] => {{
         use symetrical_grid::{Asymetrical, X};
         let x: X<_, Asymetrical> = X::new();
         x
@@ -430,11 +471,12 @@ macro_rules! grid_asym {
 }
 #[macro_export]
 /** Creates a symetrical grid from given input
+# Examples
 ```
 use symetrical_grid::{X, Y, Asymetrical, Symetrical, grid, grid_asym};
 
-let n = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
-let mut control = grid_asym!();
+let n = grid![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+let mut control = grid_asym![];
 let one: Y<i32, Asymetrical> = Y::from(&[1, 2, 3][..]);
 let two: Y<i32, Asymetrical> = Y::from(&[4, 5, 6][..]);
 let three: Y<i32, Asymetrical> = Y::from(&[7, 8, 9][..]);
@@ -447,16 +489,22 @@ assert_eq!(n, control);
 ```
 */
 macro_rules! grid {
-    ($grid: expr) => {{
-        use symetrical_grid::{grid_asym, Symetrical, X};
-        let n = grid_asym!($grid);
-        let n: X<_, Symetrical> = X::from(n);
+    ($($grid: expr),*) => {{
+        use symetrical_grid::{Asymetrical, Symetrical, X, Y};
+        let mut x: X<_, Asymetrical> = X::new();
+        $(
+
+            let mut o: Y<_, Asymetrical> = Y::new();
+            for i in &$grid[..] {
+                o.push(i.clone());
+            }
+            x.push_row(o);
+        )*
+        let n: X<_, Symetrical> = X::from(x);
         n
     }};
-    () => {{
-        use symetrical_grid::{Symetrical, X};
-        let x: X<_, Symetrical> = X::new();
-        x
+    [] => {{
+        grid_asym![].into_symetrical()
     }};
 }
 #[cfg(test)]
@@ -478,25 +526,5 @@ mod test {
         x_c[1].push(3);
         x_c[1].push(4);
         assert_eq!(x, x_c);
-    }
-    #[test]
-    fn iter() {
-        let grid: X<i32, Asymetrical> = X::from(&[&[1, 2][..], &[3, 4][..]][..]);
-        let mut iter = grid.iter();
-        assert_eq!(iter.next(), Some(&1));
-        assert_eq!(iter.next(), Some(&2));
-        assert_eq!(iter.next(), Some(&3));
-        assert_eq!(iter.next(), Some(&4));
-        assert_eq!(iter.next(), None);
-    }
-    #[test]
-    fn iter_mut() {
-        let mut grid: X<i32, Asymetrical> = X::from(&[&[1, 2][..], &[3, 4][..]][..]);
-        let mut iter = grid.iter_mut();
-        assert_eq!(iter.next(), Some(&mut 1));
-        assert_eq!(iter.next(), Some(&mut 2));
-        assert_eq!(iter.next(), Some(&mut 3));
-        assert_eq!(iter.next(), Some(&mut 4));
-        assert_eq!(iter.next(), None);
     }
 }
