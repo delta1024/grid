@@ -1,7 +1,7 @@
 use std::ops::{Add, Deref, DerefMut, Div, Mul, Sub};
 #[derive(Debug, Clone)]
 /// A representation of a point on a grid.
-pub struct Point<T>(T);
+pub struct Point<T>(pub(crate) T);
 impl<T> Point<T> {
     pub fn unwrap(self) -> T {
         self.0

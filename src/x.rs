@@ -32,6 +32,46 @@ where
             _mode: U::default(),
         }
     }
+
+    /** Returns a reference to the value at point.
+    ```
+    use symetrical_grid::grid;
+
+    let grid = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    assert_eq!(grid.get_point(1,1), Some(&5));
+    assert_eq!(grid.get_point(13, 45), None);
+    ```
+    */
+    pub fn get_point(&self, x: usize, y: usize) -> Option<&T> {
+        if x >= self.len() {
+            return None;
+        }
+
+        if y >= self[x].len() {
+            return None;
+        }
+        Some(&self[x][y].0)
+    }
+
+    /** Returns a mutable reference to the value at point.
+    ```
+    use symetrical_grid::{grid, Point};
+
+    let mut grid = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+    grid.get_point_mut(1,1).map(|x| *x = 15);
+    assert_eq!(grid[1][1], Point::from(15));
+    ```
+    */
+    pub fn get_point_mut(&mut self, x: usize, y: usize) -> Option<&mut T> {
+        if x >= self.len() {
+            return None;
+        }
+
+        if y >= self[x].len() {
+            return None;
+        }
+        Some(&mut self[x][y].0)
+    }
 }
 impl<T> X<T, Symetrical>
 where
@@ -65,7 +105,7 @@ where
     # use symetrical_grid::{X, Point, Symetrical};
     # fn main() {
         let mut grid: X<u32, Symetrical> = X::new();
-        grid.push_point((3, 4), 7);
+        grid.push_point(3, 4, 7);
         grid.add_column();
         assert_eq!(grid[3][5], Point::from(u32::default()));
     # }
@@ -90,13 +130,12 @@ where
     # fn main() {
     #   use symetrical_grid::{X, Point};
         let mut grid = X::new();
-        grid.push_point((3, 4), 5);
+        grid.push_point(3, 4, 5);
         assert_eq!(grid[3][4], Point::from(5));
     # }
     ```
         */
-    pub fn push_point(&mut self, point: (usize, usize), value: T) {
-        let (x, y) = point;
+    pub fn push_point(&mut self, x: usize, y: usize, value: T) {
         if self.rows.is_empty() {
             self.rows.push(Y::new());
         }
@@ -112,7 +151,7 @@ where
         }
         self.rows[x][y] = value.into();
     }
-    /** Converts a symetrical `X` value into a symetrical one.
+    /** Converts a symetrical `X` value into an asymetrical one.
     ```
     # use symetrical_grid::{X, Asymetrical, Symetrical};
     let f: X<i32, Symetrical> = X::new();
@@ -289,24 +328,19 @@ where
 }
 
 #[macro_export]
-/** Creates a grid from given input
+/** Creates a asymetrical grid from the given input
 ```
-use symetrical_grid::{X, Y, Asymetrical, Symetrical, grid};
+use symetrical_grid::{X, Y, Asymetrical, grid_asym};
 
-let n: X<i32, Symetrical> = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+let n = grid_asym!([&[1,2,3][..], &[4,5][..]]);
 let mut control: X<i32, Asymetrical> = X::new();
 let one: Y<i32, Asymetrical> = Y::from(&([1, 2, 3])[..]);
-let two: Y<i32, Asymetrical> = Y::from(&([4, 5, 6])[..]);
-let three: Y<i32, Asymetrical> = Y::from(&([7, 8, 9])[..]);
+let two: Y<i32, Asymetrical> = Y::from(&([4, 5])[..]);
 control.push_row(one);
 control.push_row(two);
-control.push_row(three);
-let control: X<i32, Symetrical> = X::from(control);
 assert_eq!(n, control);
-
-```
-*/
-macro_rules! grid {
+``` */
+macro_rules! grid_asym {
     ($grid: expr) => {{
         use symetrical_grid::{Asymetrical, Symetrical, X, Y};
         let mut x: X<_, Asymetrical> = X::new();
@@ -317,8 +351,43 @@ macro_rules! grid {
             }
             x.push_row(o);
         }
-        let n: X<_, Symetrical> = X::from(x);
+        x
+    }};
+    () => {{
+        use symetrical_grid::{Asymetrical, X};
+        let x: X<_, Asymetrical> = X::new();
+        x
+    }};
+}
+#[macro_export]
+/** Creates a symetrical grid from given input
+```
+use symetrical_grid::{X, Y, Asymetrical, Symetrical, grid, grid_asym};
+
+let n = grid!([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+let mut control = grid_asym!();
+let one: Y<i32, Asymetrical> = Y::from(&[1, 2, 3][..]);
+let two: Y<i32, Asymetrical> = Y::from(&[4, 5, 6][..]);
+let three: Y<i32, Asymetrical> = Y::from(&[7, 8, 9][..]);
+control.push_row(one);
+control.push_row(two);
+control.push_row(three);
+let control: X<i32, Symetrical> = X::from(control);
+assert_eq!(n, control);
+
+```
+*/
+macro_rules! grid {
+    ($grid: expr) => {{
+        use symetrical_grid::{grid_asym, Symetrical, X};
+        let n = grid_asym!($grid);
+        let n: X<_, Symetrical> = X::from(n);
         n
+    }};
+    () => {{
+        use symetrical_grid::{Symetrical, X};
+        let x: X<_, Symetrical> = X::new();
+        x
     }};
 }
 #[cfg(test)]

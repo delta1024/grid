@@ -178,6 +178,49 @@ where
     }
 }
 
+#[macro_export]
+/** Creates a new asymetrical row.
+```
+use symetrical_grid::{row_asym, Y, Asymetrical};
+
+let row: Y<i32, Asymetrical> = row_asym!([1, 2, 3]);
+let control: Y<i32, Asymetrical> = Y::from(&[1,2,3][..]);
+assert_eq!(row, control);
+```
+*/
+macro_rules! row_asym {
+    ($row: expr) => {{
+        use symetrical_grid::{Asymetrical, Y};
+        let mut n: Y<_, Asymetrical> = Y::new();
+        for val in &$row[..] {
+            n.push(val.clone());
+        }
+        n
+    }};
+    () => {
+        todo!()
+    };
+}
+#[macro_export]
+/** Creates a new symetrical row.
+```
+use symetrical_grid::{row, Y, Symetrical};
+
+let row: Y<i32, Symetrical> = row!([1, 2, 3]);
+let control: Y<i32, Symetrical> = Y::from(&[1,2,3][..]).into_symetrical();
+assert_eq!(row, control);
+```
+*/
+macro_rules! row {
+    ($row: expr) => {{
+        use symetrical_grid::row_asym;
+        let row = row_asym!($row);
+        row.into_symetrical()
+    }};
+    () => {
+        row_asym!().into_symetrical()
+    };
+}
 #[cfg(test)]
 mod test {
     use super::*;
