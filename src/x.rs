@@ -1,5 +1,8 @@
 use super::{Asymetrical, Mode, Point, Symetrical, Y};
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    slice,
+};
 #[derive(Debug, Clone)]
 /// A representation of a 2D data structure.
 pub struct X<T, M: Mode> {
@@ -71,6 +74,28 @@ where
             return None;
         }
         Some(&mut self[x][y].0)
+    }
+    pub fn iter<'a>(&'a self) -> Iter<'a, T, U> {
+        let mut iter = self.rows.iter();
+        let column: slice::Iter<Point<T>> = match iter.next() {
+            Some(column) => column.iter(),
+            None => [].iter(),
+        };
+        Iter {
+            rows: iter,
+            colums: column,
+        }
+    }
+    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T, U> {
+        let mut iter = self.rows.iter_mut();
+        let column: slice::IterMut<Point<T>> = match iter.next() {
+            Some(column) => column.iter_mut(),
+            None => [].iter_mut(),
+        };
+        IterMut {
+            rows: iter,
+            columns: column,
+        }
     }
 }
 impl<T> X<T, Symetrical>
@@ -281,7 +306,7 @@ where
     T: Default + Into<Point<T>> + Clone,
 {
     fn from(mut other: X<T, Asymetrical>) -> Self {
-        let max = other.iter().map(|x| x.len()).max().unwrap_or(0);
+        let max = other.rows.iter().map(|x| x.len()).max().unwrap_or(0);
         for i in &mut other[..] {
             for _ in i.len()..max {
                 i.push(T::default());
@@ -326,7 +351,51 @@ where
         x
     }
 }
+pub struct Iter<'a, T: 'a, U: 'a + Mode> {
+    rows: slice::Iter<'a, Y<T, U>>,
+    colums: slice::Iter<'a, Point<T>>,
+}
+impl<'a, T: 'a, U: 'a> Iterator for Iter<'a, T, U>
+where
+    U: Mode,
+{
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.colums.next() {
+            Some(n) => Some(n),
+            None => match self.rows.next() {
+                Some(n) => {
+                    self.colums = n.iter();
+                    self.next()
+                }
+                None => None,
+            },
+        }
+    }
+}
+pub struct IterMut<'a, T: 'a, U: 'a + Mode> {
+    rows: slice::IterMut<'a, Y<T, U>>,
+    columns: slice::IterMut<'a, Point<T>>,
+}
 
+impl<'a, T: 'a, U: 'a> Iterator for IterMut<'a, T, U>
+where
+    U: Mode,
+{
+    type Item = &'a mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.columns.next() {
+            Some(n) => Some(n),
+            None => match self.rows.next() {
+                Some(n) => {
+                    self.columns = n.iter_mut();
+                    self.next()
+                }
+                None => None,
+            },
+        }
+    }
+}
 #[macro_export]
 /** Creates a asymetrical grid from the given input
 ```
@@ -409,5 +478,25 @@ mod test {
         x_c[1].push(3);
         x_c[1].push(4);
         assert_eq!(x, x_c);
+    }
+    #[test]
+    fn iter() {
+        let grid: X<i32, Asymetrical> = X::from(&[&[1, 2][..], &[3, 4][..]][..]);
+        let mut iter = grid.iter();
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), Some(&2));
+        assert_eq!(iter.next(), Some(&3));
+        assert_eq!(iter.next(), Some(&4));
+        assert_eq!(iter.next(), None);
+    }
+    #[test]
+    fn iter_mut() {
+        let mut grid: X<i32, Asymetrical> = X::from(&[&[1, 2][..], &[3, 4][..]][..]);
+        let mut iter = grid.iter_mut();
+        assert_eq!(iter.next(), Some(&mut 1));
+        assert_eq!(iter.next(), Some(&mut 2));
+        assert_eq!(iter.next(), Some(&mut 3));
+        assert_eq!(iter.next(), Some(&mut 4));
+        assert_eq!(iter.next(), None);
     }
 }
