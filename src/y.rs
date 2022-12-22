@@ -1,69 +1,33 @@
-use crate::Symetrical;
-
-use super::{Asymetrical, Mode, Point};
+use super::Point;
 use std::ops::{Deref, DerefMut};
 #[derive(Debug, Clone)]
 /// A representation of a row in a grid.
-pub struct Y<T, M: Mode> {
-    pub(crate) points: Vec<Point<T>>,
-    _mode: M,
-}
-impl<T, U> PartialEq for Y<T, U>
+#[repr(transparent)]
+pub struct Y<T>(pub(crate) Vec<Point<T>>);
+impl<T> PartialEq for Y<T>
 where
     T: PartialEq,
-    U: Mode + PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.points == other.points
+        self.0 == other.0
     }
 }
-impl<T, U> Eq for Y<T, U>
-where
-    T: Eq,
-    U: Mode + Eq,
-{
-}
-impl<U, T> Y<T, U>
+impl<T> Eq for Y<T> where T: Eq {}
+impl<T> Y<T>
 where
     T: Into<Point<T>>,
-    U: Mode,
 {
     /// Returns a new instance of Self.
     pub fn new() -> Self {
-        Self {
-            points: Vec::new(),
-            _mode: U::default(),
-        }
+        Self(Vec::new())
     }
 }
-impl<U, T> Default for Y<T, U>
-where
-    U: Mode,
-{
+impl<T> Default for Y<T> {
     fn default() -> Self {
         Self::new()
     }
 }
-impl<T> Y<T, Symetrical>
-where
-    T: Into<Point<T>> + Clone,
-{
-    /** Converts a symetrical Y to an asymetrical Y.
-    # Examples
-    ```
-    # use symetrical_grid::{Y, Asymetrical, Symetrical};
-
-    let f: Y<i32, Symetrical> = Y::new();
-    let s: Y<i32, Asymetrical> = Y::new();
-    assert_eq!(s, f.into_asymetrical());
-    ```
-    */
-    #[inline]
-    pub fn into_asymetrical(self) -> Y<T, Asymetrical> {
-        Y::from(self)
-    }
-}
-impl<T> Y<T, Asymetrical>
+impl<T> Y<T>
 where
     T: Into<Point<T>> + Clone,
 {
@@ -71,24 +35,24 @@ where
 
     # Examples
     ```
-    # use symetrical_grid::{X, Point, Asymetrical, Y};
+    # use symetrical_grid::{X, Point, Y};
     # fn main() {
-        let mut grid: X<i32, Asymetrical> = X::new();
-        grid.add_row();
+        let mut grid = X::new();
+        grid.add_row_no_resize();
         grid[0].push(3);
         assert_eq!(grid[0][0], Point::from(3));
     # }
     */
     #[inline]
     pub fn push(&mut self, value: T) {
-        self.points.push(value.into())
+        self.0.push(value.into())
     }
     /** Calles pop on the underling vector.
     # Examples
     ```
-    # use symetrical_grid::{Y, Asymetrical};
+    # use symetrical_grid::Y;
     # fn main() {
-        let mut y: Y<u32, Asymetrical> = Y::new();
+        let mut y = Y::new();
         y.push(3);
         assert_eq!(y.pop(), Some(3));
     # }
@@ -96,139 +60,75 @@ where
     */
     #[inline]
     pub fn pop(&mut self) -> Option<T> {
-        self.points.pop().map(|x| x.unwrap())
+        self.0.pop().map(|x| x.unwrap())
     }
     /// Resizes `Y` in place so that `len` is equal to `new_len`.
     #[inline]
     pub fn resize(&mut self, new_len: usize, value: T) {
-        self.points.resize(new_len, value.into())
+        self.0.resize(new_len, value.into())
     }
-    /** Converts an asymetrical Y to a symetrical Y.
-    # Examples
-    ```
-    # use symetrical_grid::{Y, Asymetrical, Symetrical};
-
-    let f: Y<i32, Asymetrical> = Y::new();
-    let s: Y<i32, Symetrical> = Y::new();
-    assert_eq!(s, f.into_symetrical());
-    ```
-    */
     #[inline]
-    pub fn into_symetrical(self) -> Y<T, Symetrical> {
-        Y::from(self)
+    pub fn with_capacity(capacity: usize) -> Self {
+        Y(Vec::with_capacity(capacity))
     }
 }
 
-impl<T, U> Deref for Y<T, U>
-where
-    U: Mode,
-{
+impl<T> Deref for Y<T> {
     type Target = [Point<T>];
     fn deref(&self) -> &Self::Target {
-        &self.points[..]
+        &self.0[..]
     }
 }
 
-impl<T, U> DerefMut for Y<T, U>
-where
-    U: Mode,
-{
+impl<T> DerefMut for Y<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.points[..]
+        &mut self.0[..]
     }
 }
 
-impl<A, M: Mode + Default> FromIterator<A> for Y<A, M> {
+impl<A> FromIterator<A> for Y<A> {
     fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
-        Self {
-            points: iter
-                .into_iter()
+        Self(
+            iter.into_iter()
                 .map(|x| Point::from(x))
                 .collect::<Vec<Point<A>>>(),
-            _mode: M::default(),
-        }
+        )
     }
 }
 
-impl<T> From<Y<T, Asymetrical>> for Y<T, Symetrical> {
-    fn from(other: Y<T, Asymetrical>) -> Self {
-        Self {
-            points: other.points,
-            _mode: Symetrical,
-        }
-    }
-}
-
-impl<T> From<Y<T, Symetrical>> for Y<T, Asymetrical> {
-    fn from(other: Y<T, Symetrical>) -> Self {
-        Self {
-            points: other.points,
-            _mode: Asymetrical,
-        }
-    }
-}
-
-impl<T> From<&[T]> for Y<T, Asymetrical>
+impl<T> From<&[T]> for Y<T>
 where
     T: Clone,
 {
     fn from(v: &[T]) -> Self {
-        Self {
-            points: v
-                .iter()
+        Self(
+            v.iter()
                 .map(|x| Point::from(x.clone()))
                 .collect::<Vec<Point<T>>>(),
-            _mode: Asymetrical,
-        }
+        )
     }
 }
 
 #[macro_export]
-/** Creates a new asymetrical row.
-# Examples
-```
-use symetrical_grid::{row_asym, Y, Asymetrical};
-
-let row: Y<i32, Asymetrical> = row_asym![1, 2, 3];
-let control: Y<i32, Asymetrical> = Y::from(&[1,2,3][..]);
-assert_eq!(row, control);
-```
-*/
-macro_rules! row_asym {
-    ($($row: expr),*) => {{
-        use symetrical_grid::{Asymetrical, Y};
-        let mut n: Y<_, Asymetrical> = Y::new();
-        $(
-            n.push($row.clone());
-         )*
-        n
-    }};
-    [] => {
-        let n: Y<_, Asymetriacal> = Y::new();
-        n
-    };
-}
-#[macro_export]
 /** Creates a new symetrical row.
 ```
-use symetrical_grid::{row, Y, Symetrical};
+use symetrical_grid::{row, Y};
 
-let row: Y<i32, Symetrical> = row![1, 2, 3];
-let control: Y<i32, Symetrical> = Y::from(&[1,2,3][..]).into_symetrical();
+let row = row![1, 2, 3];
+let control = Y::from(&[1,2,3][..]);
 assert_eq!(row, control);
 ```
 */
 macro_rules! row {
     ($($row: expr),*) => {{
-        use symetrical_grid::{Asymetrical, Y};
-        let mut n: Y<_, Asymetrical> = Y::new();
+        use symetrical_grid::Y;
+        let mut n = Y::new();
         $(
             n.push($row.clone());
          )*
-        n.into_symetrical()
-    }};
+        n    }};
     [] => {
-        row_asym![].into_symetrical()
+        Y::new()
     };
 }
 #[cfg(test)]
@@ -238,7 +138,7 @@ mod test {
     fn from_slices() {
         let control = [1, 2, 3];
         let y = Y::from(&control[..]);
-        let mut control: Y<i32, Asymetrical> = Y::new();
+        let mut control = Y::new();
         control.push(1);
         control.push(2);
         control.push(3);
